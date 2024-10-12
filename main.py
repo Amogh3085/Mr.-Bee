@@ -3,12 +3,9 @@ from discord.ext import commands
 from discord import app_commands
 import os
 import asyncio
-from dotenv import load_dotenv
 from g4f.client import Client
 
-load_dotenv()
-
-TOKEN = # input your own one in dotenv
+TOKEN = "" # input your own one in dotenv
 intents = discord.Intents.default()
 intents.message_content = True  
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -41,11 +38,12 @@ async def help_command(interaction: discord.Interaction):
     )
     help_embed.add_field(name="/about", value="-Tells about project", inline=False),
     help_embed.add_field(name="/help", value="-Tells project commands", inline=False),
-    help_embed.add_field(name="/aflashcarddd_flashcard", value="-Adds a flashcard", inline=False),
+    help_embed.add_field(name="/view_flashcard", value="-Adds a flashcard", inline=False),
     help_embed.add_field(name="/quiz", value="-Memorize flashcards", inline=False), 
     help_embed.add_field(name="/delete_flashcards", value="-Delete flashcards", inline=False),
     help_embed.add_field(name="/trivia", value="-Trivia question", inline=False), 
-    help_embed.add_field(name="/test", value="- Test", inline=True),
+    help_embed.add_field(name="/test", value="- Test your knowledge on flashcards", inline=False)
+
     
     
     await interaction.response.send_message(embed=help_embed)
@@ -74,13 +72,13 @@ user_notes = {}
 
 @bot.tree.command(name='add_note', description="Add a flashcard note")
 @app_commands.describe(question="Enter the question", answer="Enter the answer")
-async def add_note(interaction: discord.Interaction, question: str, answer: str):
+async def add_note(interaction: discord.Interaction, question: str, answer: str,):
     user_id = interaction.user.id 
 
     if user_id not in user_notes:
         user_notes[user_id] = []
 
-    user_notes[user_id].append({"question": question, "answer": answer})
+    user_notes[user_id].append({"question": question, "answer": answer, "id": id})
 
     await interaction.response.send_message(
         f"Flashcard added!\n**Question:** {question}\n**Answer:** {answer}"
@@ -118,15 +116,17 @@ async def view_flashcards(interaction: discord.Interaction):
 
 user_trivia = {}
 
-@bot.tree.command(name="trivia", description="AI will generate five random trivia questions and you'll answer them test style!")
-async def trivia(interaction: discord.Interaction):
+
+@bot.tree.command(name="triva", description="AI will generate five random trivia questions realated to the topic you chose!")
+@app_commands.describe(theme="Enter your theme", questions="Choose how many questions you want.")
+async def trivia(interaction: discord.Interaction, theme: str, questions: int):
     await interaction.response.defer()
 
     try:
         client = Client()
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": "Create five random trivia questions with answers. Format as 'Q: question' and 'A: answer'."}]
+            messages=[{"role": "user", "content": f"Create {questions} random trivia about {theme} uestions with answers. Format as 'Q: question' and 'A: answer'."}]
         )
 
         ai_response = response.choices[0].message.content
@@ -165,7 +165,7 @@ async def trivia(interaction: discord.Interaction):
 
 def extract_trivia(ai_response):
     lines = ai_response.split("\n")
-    questions_and_answers = []
+    questions_and_answers= []
     
     current_question = ""
     current_answer = ""
