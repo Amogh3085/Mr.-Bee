@@ -8,7 +8,7 @@ from g4f.client import Client
 
 load_dotenv()
 
-TOKEN = #input your own one in dotenv
+TOKEN = # input your own one in dotenv
 intents = discord.Intents.default()
 intents.message_content = True  
 bot = commands.Bot(command_prefix='!', intents=intents)
