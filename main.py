@@ -5,7 +5,7 @@ import os
 import asyncio
 from g4f.client import Client
 
-TOKEN = "" #input your own token
+TOKEN = "" #input a token
 intents = discord.Intents.default()
 intents.message_content = True  
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -38,7 +38,7 @@ async def help_command(interaction: discord.Interaction):
     )
     help_embed.add_field(name="/about", value="-Tells about project", inline=False),
     help_embed.add_field(name="/help", value="-Tells project commands", inline=False),
-    help_embed.add_field(name="/view_flashcard", value="-Adds a flashcard", inline=False),
+    help_embed.add_field(name="/add_note", value="-Adds a flashcard", inline=False),
     help_embed.add_field(name="/trivia", value="-Trivia question", inline=False), 
     help_embed.add_field(name="/test", value="- Test your knowledge on flashcards", inline=False)
 
@@ -160,6 +160,26 @@ async def trivia(interaction: discord.Interaction, theme: str, questions: int):
     except Exception as e:
         await interaction.followup.send(f"Something went wrong: {str(e)}")
 
+@bot.tree.command(name="translate", description="It can translate your language english!")
+@app_commands.describe(text="Enter the non-english text!")
+async def trivia(interaction: discord.Interaction, text: str):
+    await interaction.response.defer()
+
+    try:
+        client = Client()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": f"Translate {text} to english"}]
+        )
+
+        ai_response = response.choices[0].message.content
+
+        await interaction.followup.send(f"{ai_response}")
+
+    except Exception as e:
+        await interaction.followup.send(f"Something went wrong: {str(e)}")
+
+
 
 def extract_trivia(ai_response):
     lines = ai_response.split("\n")
@@ -179,4 +199,5 @@ def extract_trivia(ai_response):
     
     return questions_and_answers
 
+ 
 bot.run(TOKEN)
